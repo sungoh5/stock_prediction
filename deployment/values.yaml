@@ -1,0 +1,4 @@
+replicaCount: 1
+image:
+  repository: "stock-prediction"
+  tag: "0.0.1"
