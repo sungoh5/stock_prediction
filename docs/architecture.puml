@@ -1,0 +1,30 @@
+@startuml
+package "Client" {
+  [Browser] - HTTP
+}
+
+package "Kubernetes (minikube)" {
+  HTTP - [API Gateway]
+  [Stock Prediction]
+  [Stock Data Sync Batch]
+  [Stock Training Batch]
+
+  database "MongoDB" {
+      [Documents]
+  }
+}
+
+cloud {
+  [Yahoo Finance]
+}
+
+
+[API Gateway] --> [Stock Prediction]
+[Stock Prediction] <-- [Documents] : Read stock data
+
+[Stock Data Sync Batch] --> [Documents] : Insert stock data
+[Stock Data Sync Batch] <-- [Yahoo Finance]: Obtain stock data
+
+[Stock Training Batch] <-- [Documents] : Read stock data
+[Stock Training Batch] --> [Documents] : Insert stock prediction data
+@enduml
