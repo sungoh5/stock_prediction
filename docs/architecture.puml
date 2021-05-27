@@ -7,7 +7,7 @@ package "Kubernetes (minikube)" {
   HTTP - [API Gateway]
   [Stock Prediction]
   [Stock Data Sync Batch]
-  [Stock Training Batch]
+  [Stock ML Training Batch]
 
   database "MongoDB" {
       [Documents]
@@ -25,6 +25,6 @@ cloud {
 [Stock Data Sync Batch] --> [Documents] : Insert stock data
 [Stock Data Sync Batch] <-- [Yahoo Finance]: Obtain stock data
 
-[Stock Training Batch] <-- [Documents] : Read stock data
-[Stock Training Batch] --> [Documents] : Insert stock prediction data
+[Stock ML Training Batch] <-- [Documents] : Read stock data
+[Stock ML Training Batch] --> [Documents] : Insert stock prediction data
 @enduml
