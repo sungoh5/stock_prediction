@@ -1,3 +1,5 @@
+import numpy as np
+
 from flask import Flask, render_template
 
 from app.common import mongo
@@ -24,10 +26,12 @@ def create_app():
         tickers = mongo.client['tickers'].find({'ticker': f'{ticker}'}, {'_id': False})
         if tickers.count() > 0:
             times, closes, predictions = extract_data(ticker)
+            avg_diff=np.sqrt(np.power(np.mean(closes) - np.mean(predictions), 2))
 
             return render_template('line_chart.html', ticker=ticker.upper(), labels=times,
                                    closes=closes, close_legend='close',
-                                   predictions=predictions, prediction_legend='prediction')
+                                   predictions=predictions, prediction_legend='prediction',
+                                   avg_diff=avg_diff)
         else:
             return f'The {ticker} does not support'
 
