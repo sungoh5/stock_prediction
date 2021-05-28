@@ -13,7 +13,8 @@ setup(
     install_requires=[
         'Flask==2.0.1',
         'gunicorn==20.1.0',
-        'gevent==21.1.2'
+        'gevent==21.1.2',
+        'pymongo==3.11.4'
         ],
     include_package_data=True
 )
