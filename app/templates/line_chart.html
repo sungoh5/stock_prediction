@@ -1,20 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 <head>
     <meta charset="utf-8" />
-    <title>Chart.js Example</title>
+    <title>Stock Prediction</title>
 </head>
 <body>
 <h1>Stock Prediction - {{ticker}}</h1>
-<canvas id="predictionChart" width="1200" height="800"></canvas>
-<h1>Average Difference - {{avg_diff}}</h1>
+<div class="image-detail">
+    <canvas class="image-detail-canvas"  id="rnn_chart" width="1000" height="800"></canvas>
+    <div class="desc"><h2>RNN - Price MSE : {{rnn_mse}} / Price Distance : {{rnn_price_distance}} / Close Average Price: {{rnn_close_avg_price}}</h2></div>
+</div>
+<div class="image-detail">
+    <canvas class="image-detail-canvas"  id="lstm_chart" width="1000" height="800"></canvas>
+    <div class="desc"><h2>LSTM - Price MSE : {{lstm_mse}} / Price Distance : {{lstm_price_distance}} / Close Average Price: {{lstm_close_avg_price}}</h2></div>
+</div>
+<div class="image-detail">
+    <canvas class="image-detail-canvas"  id="gru_chart" width="1000" height="800"></canvas>
+    <div class="desc"><h2>GRU - Price MSE : {{gru_mse}} / Price Distance : {{gru_price_distance}} / Close Average Price: {{gru_close_avg_price}}</h2></div>
+</div>
+
 
 <script>
     Chart.defaults.global.responsive = false;
 
-    var chartData = {
-        labels : [{% for item in labels %}
+    var rnnChartData = {
+        labels : [{% for item in rnn_times %}
     "{{item}}",
     {% endfor %}],
     datasets : [{
@@ -36,7 +48,7 @@
         pointHoverBorderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 10,
-        data : [{% for item in closes %}
+        data : [{% for item in rnn_closes %}
         {{item}},
     {% endfor %}],
     spanGaps: false
@@ -59,21 +71,129 @@
             pointHoverBorderWidth: 2,
             pointRadius: 1,
             pointHitRadius: 10,
-            data : [{% for item in predictions %}
+            data : [{% for item in rnn_predictions %}
         {{item}},
         {% endfor %}],
         spanGaps: false
     }]
     }
 
+    var lstmChartData = {
+        labels : [{% for item in lstm_times %}
+    "{{item}}",
+    {% endfor %}],
+    datasets : [{
+        label: '{{ close_legend }}',
+        fill: false,
+        lineTension: 0.1,
+        backgroundColor: "rgba(75,192,192,0.4)",
+        borderColor: "rgba(75,192,192,1)",
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: "rgba(75,192,192,1)",
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data : [{% for item in lstm_closes %}
+        {{item}},
+    {% endfor %}],
+    spanGaps: false
+    },{
+        label: '{{ prediction_legend }}',
+            fill: false,
+            lineTension: 0.1,
+            backgroundColor: "rgb(255, 99, 132)",
+            borderColor: "rgba(255, 99, 130, 1)",
+            borderCapStyle: 'butt',
+            borderDash: [],
+            borderDashOffset: 0.0,
+            borderJoinStyle: 'miter',
+            pointBorderColor: "rgb(255, 99, 132)",
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: "rgb(255, 99, 132)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+            pointHitRadius: 10,
+            data : [{% for item in lstm_predictions %}
+        {{item}},
+        {% endfor %}],
+        spanGaps: false
+    }]
+    }
+
+    var gruChartData = {
+        labels : [{% for item in gru_times %}
+    "{{item}}",
+    {% endfor %}],
+    datasets : [{
+        label: '{{ close_legend }}',
+        fill: false,
+        lineTension: 0.1,
+        backgroundColor: "rgba(75,192,192,0.4)",
+        borderColor: "rgba(75,192,192,1)",
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: "rgba(75,192,192,1)",
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data : [{% for item in gru_closes %}
+        {{item}},
+    {% endfor %}],
+    spanGaps: false
+    },{
+        label: '{{ prediction_legend }}',
+            fill: false,
+            lineTension: 0.1,
+            backgroundColor: "rgb(255, 99, 132)",
+            borderColor: "rgba(255, 99, 130, 1)",
+            borderCapStyle: 'butt',
+            borderDash: [],
+            borderDashOffset: 0.0,
+            borderJoinStyle: 'miter',
+            pointBorderColor: "rgb(255, 99, 132)",
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: "rgb(255, 99, 132)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+            pointHitRadius: 10,
+            data : [{% for item in gru_predictions %}
+        {{item}},
+        {% endfor %}],
+        spanGaps: false
+    }]
+    }
+
+
     // get chart canvas
-    var holder = document.getElementById("predictionChart");
-    var ctx = document.getElementById("predictionChart").getContext("2d");
+    var rnn_ctx = document.getElementById("rnn_chart").getContext("2d");
+    var lstm_ctx = document.getElementById("lstm_chart").getContext("2d");
+    var gru_ctx = document.getElementById("gru_chart").getContext("2d");
 
     // create the chart using the chart canvas
-    var predictionChart = new Chart(ctx, {
+    var rnnChart = new Chart(rnn_ctx, {
         type: 'line',
-        data: chartData,
+        data: rnnChartData,
         options: {
             tooltips: {
                 enabled: true,
@@ -86,17 +206,38 @@
             },
         }
     });
-    var pointSelected = document.getElementById("pointSelected");
 
-    holder.onclick = function(evt){
-        var activePoint = predictionChart.getElementAtEvent(evt);
-        console.log(activePoint);
-        console.log('x:' + activePoint[0]._view.x);
-        console.log('maxWidth: ' + activePoint[0]._xScale.maxWidth);
-        console.log('y: ' + activePoint[0]._view.y);
-        console.log('index: ' + activePoint[0]._index);
-        pointSelected.innerHTML = 'Point selected... index: ' + activePoint[0]._index;
-    };
+    var lstm_ctx = new Chart(lstm_ctx, {
+        type: 'line',
+        data: lstmChartData,
+        options: {
+            tooltips: {
+                enabled: true,
+                mode: 'single',
+                callbacks: {
+                    label: function(tooltipItems, data) {
+                        return tooltipItems.yLabel + ' $';
+                    }
+                }
+            },
+        }
+    });
+
+    var gru_ctx = new Chart(gru_ctx, {
+        type: 'line',
+        data: gruChartData,
+        options: {
+            tooltips: {
+                enabled: true,
+                mode: 'single',
+                callbacks: {
+                    label: function(tooltipItems, data) {
+                        return tooltipItems.yLabel + ' $';
+                    }
+                }
+            },
+        }
+    });
 </script>
 
 </body>
